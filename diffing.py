@@ -31,40 +31,31 @@ class DiffingCell:
 # Input: a dynamic programming table,  cell index i and j, the input strings s and t, and a cost function cost.
 # Should return a DiffingCell which we will place at (i,j) for you.
 def fill_cell(table, i, j, s, t, cost):
-    c1 = cost(s[j-1],'-')
-    c2 = cost('-',t[i-1])
-    c3 = cost(s[j-1],t[i-1])
     
     if(i==0 and j==0):
         return DiffingCell('-','-', 0)
     
     if(i==0 and j!=0): # first row
-        c = c1 + table.get(i,j-1).cost
+        c = cost(s[j-1],'-') + table.get(i,j-1).cost
         return DiffingCell(s[j-1],'-', c)
     
     if(i!=0 and j==0): # first column
-        c = c2 + table.get(i-1,j).cost
+        c = cost('-',t[i-1]) + table.get(i-1,j).cost
         return DiffingCell('-',t[i-1], c)
     
-    # print choices
-#    print(i,j)
-#    print("choices are: %d , %d , %d" %
-#    (cost('-',t[i-1])    + table.get(i-1,j).cost,        # up
-#    cost(s[j-1],t[i-1]) + table.get(i-1,j-1).cost,      # match
-#    cost(s[j-1],'-')    + table.get(i,j-1).cost))        # left
-
+    up_cost     = cost('-',t[i-1])    + table.get(i-1,j).cost   # up
+    diag_cost   = cost(s[j-1],t[i-1]) + table.get(i-1,j-1).cost # diag
+    left_cost   = cost(s[j-1],'-')    + table.get(i,j-1).cost   #left
     
-    cell_cost = min(
-            c2    + table.get(i-1,j).cost,      # up
-            c3 + table.get(i-1,j-1).cost,       # match
-            c1    + table.get(i,j-1).cost)      # left
+    cell_cost = min( up_cost, diag_cost, left_cost)
 
-    if (cell_cost == c2 + table.get(i-1,j).cost):      # up
-        return DiffingCell('-', t[i-1], cell_cost)
-        
-    elif (cell_cost == c3 + table.get(i-1,j-1).cost):  # match
+    if (cell_cost == up_cost):         # up
+        return DiffingCell('-', t[i-1], cell_cost)   
+    
+    elif (cell_cost == diag_cost):  # match
         return DiffingCell(s[j-1], t[i-1], cell_cost)
-    else:                                              # left
+    
+    else:                                                               # left
         return DiffingCell(s[j-1], '-', cell_cost)
     
     return DiffingCell('', '', cell_cost)
@@ -78,13 +69,13 @@ def cell_ordering(n,m):
         base_case_row = (0,i)
         result.append(base_case_row)
     
-    for i in range (1,m+1):
-        base_case_col = (i,0)
+    for j in range (1,m+1):
+        base_case_col = (j,0)
         result.append(base_case_col)
     
     for i in range (1,n+1):
         for j in range (1,m+1):
-            tuple = (i,j)
+            tuple = (j,i)
             result.append(tuple)
 
     return result
@@ -133,7 +124,6 @@ def diff_from_table(s, t, table):
 # Example usage
 if __name__ == "__main__":
     
-    # cost table
     # Example cost function from instructions.pdf
     def costfunc(s_char, t_char):
         if s_char == t_char: return 0
@@ -154,7 +144,8 @@ if __name__ == "__main__":
             if t_char == 'b': return 3
             if t_char == 'c': return 3
 
-    s = "acb"
+    import dynamic_programming
+    s = "acbb"
     t = "baa"
     
     D = dynamic_programming.DynamicProgramTable(len(s) + 1, len(t) + 1, cell_ordering(len(s), len(t)), fill_cell)
@@ -165,7 +156,7 @@ if __name__ == "__main__":
     print "cost was %d"%cost
     
 #    print(cell_ordering(len(s), len(t)))
-    
+#    
 #    for i in range(4):
 #        for j in range(4):
 #            print("curr: %d, %d, cost:%d" % (i,j,
