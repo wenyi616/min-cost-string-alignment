@@ -36,29 +36,27 @@ def fill_cell(table, i, j, s, t, cost):
         return DiffingCell('-','-', 0)
     
     if(i==0 and j!=0): # first row
-        c = cost('-', t[j-1]) + table.get(i,j-1).cost
-        # print("Fill table %d , %d | cost = %d" %(i,j,c))
-        return DiffingCell('-',t[j-1], c)
+        c = cost(s[j-1],'-') + table.get(i,j-1).cost
+        return DiffingCell(s[j-1],'-', c)
     
     if(i!=0 and j==0): # first column
-        c = cost(s[i-1],'-') + table.get(i-1,j).cost
-        # print("Fill table %d , %d | cost = %d" %(i,j,c))
-        return DiffingCell(s[i-1],'-', c)
+        c = cost('-',t[i-1]) + table.get(i-1,j).cost
+        return DiffingCell('-',t[i-1], c)
     
-    up_cost     = cost(s[i-1],'-')    + table.get(i-1,j).cost   # up
-    diag_cost   = cost(s[i-1],t[j-1]) + table.get(i-1,j-1).cost # diag
-    left_cost   = cost('-', t[j-1])    + table.get(i,j-1).cost   #left
+    up_cost     = cost('-',t[i-1])    + table.get(i-1,j).cost   # up
+    diag_cost   = cost(s[j-1],t[i-1]) + table.get(i-1,j-1).cost # diag
+    left_cost   = cost(s[j-1],'-')    + table.get(i,j-1).cost   #left
     
     cell_cost = min( up_cost, diag_cost, left_cost)
 
     if (cell_cost == up_cost):         # up
-        return DiffingCell(s[i-1],'-', cell_cost)   
+        return DiffingCell('-', t[i-1], cell_cost)   
     
-    elif (cell_cost == diag_cost):     # match
-        return DiffingCell(s[i-1],t[j-1], cell_cost)
+    elif (cell_cost == diag_cost):  # match
+        return DiffingCell(s[j-1], t[i-1], cell_cost)
     
-    else:                              # left
-        return DiffingCell('-', t[j-1], cell_cost)
+    else:                                                               # left
+        return DiffingCell(s[j-1], '-', cell_cost)
     
     return DiffingCell('', '', cell_cost)
 
@@ -68,16 +66,16 @@ def fill_cell(table, i, j, s, t, cost):
 def cell_ordering(n,m):
     result = []
     for i in range (n+1):
-        base_case_row = (i,0)
+        base_case_row = (0,i)
         result.append(base_case_row)
     
     for j in range (1,m+1):
-        base_case_col = (0,j)
+        base_case_col = (j,0)
         result.append(base_case_col)
     
     for i in range (1,n+1):
         for j in range (1,m+1):
-            tuple = (i,j)
+            tuple = (j,i)
             result.append(tuple)
 
     return result
@@ -90,8 +88,8 @@ def diff_from_table(s, t, table):
     align_s = ''
     align_t = ''
     
-    row = len(s)
-    col = len(t)  
+    row = len(t)
+    col = len(s)  
     c = table.get(row,col).cost
     
     while (row >= 0 and col >= 0):        
@@ -101,13 +99,13 @@ def diff_from_table(s, t, table):
             row = row - 1
             col = col - 1
             
-        elif (cell.s_char != '-' and cell.t_char == '-'):     # up
+        elif (cell.s_char == '-' and cell.t_char != '-'):     # up
             # print("upup")
             align_s = cell.s_char + align_s
             align_t = cell.t_char + align_t
             row = row - 1
             
-        elif (cell.s_char == '-' and cell.t_char != '-'):     # left
+        elif (cell.s_char != '-' and cell.t_char == '-'):     # left
             # print("left")
             align_s = cell.s_char + align_s
             align_t = cell.t_char + align_t
@@ -147,7 +145,7 @@ if __name__ == "__main__":
             if t_char == 'c': return 3
 
     import dynamic_programming
-    s = "acb"
+    s = "acbb"
     t = "baa"
     
     D = dynamic_programming.DynamicProgramTable(len(s) + 1, len(t) + 1, cell_ordering(len(s), len(t)), fill_cell)
@@ -158,8 +156,7 @@ if __name__ == "__main__":
     print "cost was %d"%cost
     
 #    print(cell_ordering(len(s), len(t)))
-    
-#    print( "********************************" )    
+#    
 #    for i in range(4):
 #        for j in range(4):
 #            print("curr: %d, %d, cost:%d" % (i,j,
